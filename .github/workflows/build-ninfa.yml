@@ -1,0 +1,27 @@
+name: Build Ninfa ISO
+on:
+  workflow_dispatch:
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+      options: --privileged
+    steps:
+      - run: apt-get update && apt-get install -y git sudo
+      - uses: actions/checkout@v4
+      - name: Extrair projeto Ninfa
+        run: |
+          f=$(ls -t ninfa-projeto* | head -n1)
+          echo "Usando: $f"
+          tar xzf "$f"
+      - name: Gerar ISO
+        run: cd ninfa-os && ./build.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ninfa-iso
+          path: |
+            ninfa-os/ninfa-0.2-amd64.iso
+            ninfa-os/ninfa-0.2-amd64.iso.sha256
+            ninfa-os/build.log
